@@ -1,0 +1,85 @@
+﻿#!/usr/bin/env node
+import { parseArgs } from 'node:util';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { loadConfig, mergePatterns } from './utils/config';
+import { excludeNames } from './utils/filters';
+import { SQLiteExtractor } from './extractors/sqliteExtractor';
+import { PostgresExtractor } from './extractors/postgresExtractor';
+import { MySQLExtractor } from './extractors/mysqlExtractor';
+import { renderMarkdown } from './emitters/markdown';
+
+function parseUrlToPath(urlStr: string): string {
+  try {
+    const u = new URL(urlStr);
+    if (u.protocol !== 'sqlite:') throw new Error('Only sqlite URLs are supported (sqlite:///absolute/path.db)');
+    let p = u.pathname;
+    if (process.platform === 'win32' && p.startsWith('/') && p[2] === ':') p = p.slice(1);
+    return p;
+  } catch (e) {
+    throw new Error(`Invalid --url: ${(e as Error).message}`);
+  }
+}
+
+async function main() {
+  const { values } = parseArgs({
+    options: {
+      url: { type: 'string' },
+      output: { type: 'string' },
+      exclude: { type: 'string', default: '' },
+      title: { type: 'string', default: 'Database Documentation' }
+    },
+    allowPositionals: false
+  } as any);
+
+  if (!values.url || !values.output) throw new Error('--url and --output are required');
+
+  const conf = loadConfig();
+  const excludeCli = String(values.exclude || '')
+    .split(',')
+    .map((s: string) => s.trim())
+    .filter(Boolean);
+  const patterns = mergePatterns(excludeCli, conf.exclude);
+
+    let schemaAll;
+  if (String(new URL(String(values.url)).protocol).startsWith('sqlite')) {
+    const sqlitePath = parseUrlToPath(String(values.url));
+    if (!existsSync(sqlitePath)) throw new Error(`SQLite file not found: ${sqlitePath}`);
+    const extractor = new SQLiteExtractor(sqlitePath);
+    schemaAll = await extractor.load();
+    const names = schemaAll.tables.map(t => t.name);
+    const kept = excludeNames(names, patterns);
+    var schema = (kept.length === names.length) ? schemaAll : await extractor.load(kept);
+  } else if (String(new URL(String(values.url)).protocol).startsWith('postgres')) {
+    const u = String(values.url);
+    const schemaParam = new URL(u).searchParams.get('schema') || 'public';
+    const extractor = new PostgresExtractor(u, schemaParam);
+    schemaAll = await extractor.load();
+    const names = schemaAll.tables.map(t => t.name);
+    const kept = excludeNames(names, patterns);
+    schema = (kept.length === names.length) ? schemaAll : await extractor.load(kept);
+  } else if (String(new URL(String(values.url)).protocol).startsWith('mysql')) {
+    const u = String(values.url);
+    const extractor = new MySQLExtractor(u);
+    schemaAll = await extractor.load();
+    const names = schemaAll.tables.map(t => t.name);
+    const kept = excludeNames(names, patterns);
+    schema = (kept.length === names.length) ? schemaAll : await extractor.load(kept);
+  } else {
+    throw new Error('Unsupported URL scheme. Use sqlite://, postgres://, or mysql://');
+  }
+
+  const md = renderMarkdown(schema, String(values.title));
+  const outPath = String(values.output);
+  const dir = dirname(outPath);
+  if (dir && !existsSync(dir)) mkdirSync(dir, { recursive: true });
+  writeFileSync(outPath, md, 'utf-8');
+  console.log(`Wrote: ${outPath}`);
+}
+
+main().catch(err => { console.error((err as Error).message); process.exit(1); });
+
+
+
+
+

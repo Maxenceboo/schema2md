@@ -1,0 +1,29 @@
+﻿{
+    "name":  "schema2md",
+    "version":  "0.2.0",
+    "description":  "Generate Markdown + Mermaid ER from DB schemas (TypeScript CLI, SQLite MVP)",
+    "private":  true,
+    "type":  "commonjs",
+    "bin":  {
+                "db-doc":  "dist/cli.js"
+            },
+    "scripts":  {
+                    "build":  "tsc",
+                    "start":  "node dist/cli.js",
+                    "clean":  "node -e \"require(\u0027fs\u0027).rmSync(\u0027dist\u0027,{recursive:true,force:true})\""
+                },
+    "dependencies":  {
+                         "sql.js":  "^1.9.0",
+                         "pg":  "^8.11.5",
+                         "mysql2":  "^3.11.0"
+                     },
+    "devDependencies":  {
+                            "typescript":  "^5.4.0",
+                            "@types/node":  "^20.11.30"
+                        },
+    "license":  "MIT",
+    "repository":  {
+                       "type":  "git",
+                       "url":  ""
+                   }
+}
