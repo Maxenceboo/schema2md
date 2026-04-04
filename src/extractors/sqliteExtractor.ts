@@ -29,7 +29,7 @@ export class SQLiteExtractor {
           type: toGeneric(String(r.type ?? '')),
           nullable: Number(r.notnull) === 0,
           default: r.dflt_value == null ? null : String(r.dflt_value),
-          is_pk: Number(r.pk) === 1,
+          is_pk: Number(r.pk) > 0,
           is_fk: false,
           comment: null
         }));
@@ -54,4 +54,5 @@ export class SQLiteExtractor {
     }
   }
 }
+
 
