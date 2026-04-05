@@ -1,1 +1,3 @@
-﻿# SQLite University Example\n\nSame command as Shop (adjust file names).\n
+﻿# SQLite University Example
+
+See main README for commands; adjust absolute paths to your machine.

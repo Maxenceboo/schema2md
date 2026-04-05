@@ -1,3 +1,3 @@
-﻿# SQLite Org Example
+﻿# SQLite Shop Example
 
 See main README for commands; adjust absolute paths to your machine.
