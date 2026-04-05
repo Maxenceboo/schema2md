@@ -1,0 +1,45 @@
+﻿name: Build LaTeX PDFs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - 'src/**'
+      - 'examples/**'
+
+jobs:
+  latex:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci || npm install
+      - run: npm run build
+      - name: Generate .tex with CLI (summary)
+        run: |
+          node dist/cli.js --url "sqlite:///$(pwd)/examples/shop.sqlite" --output "examples/SHOP.tex" --title "Shop DB" --format latex --summary
+          node dist/cli.js --url "sqlite:///$(pwd)/examples/university.sqlite" --output "examples/UNIVERSITY.tex" --title "University DB" --format latex --summary
+          node dist/cli.js --url "sqlite:///$(pwd)/examples/org.sqlite" --output "examples/ORG.tex" --title "Org DB" --format latex --summary
+      - name: Install TeX Live (basic)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra latexmk
+      - name: Compile PDFs
+        run: |
+          latexmk -pdf -interaction=nonstopmode -halt-on-error examples/SHOP.tex
+          latexmk -pdf -interaction=nonstopmode -halt-on-error examples/UNIVERSITY.tex
+          latexmk -pdf -interaction=nonstopmode -halt-on-error examples/ORG.tex
+      - name: Cleanup aux files
+        run: |
+          latexmk -c examples/SHOP.tex || true
+          latexmk -c examples/UNIVERSITY.tex || true
+          latexmk -c examples/ORG.tex || true
+      - name: Upload PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema-pdfs
+          path: |
+            examples/*.pdf
