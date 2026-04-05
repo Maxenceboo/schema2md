@@ -112,16 +112,6 @@ CLI `--exclude` merges with config values (deduped).
 
 ## Troubleshooting
 
-- Docker DNS: If image pulls fail (registry-1.docker.io host), set Docker Engine `daemon.json` with:
-
-```json
-{
-  "dns": ["8.8.8.8", "1.1.1.1"],
-  "registry-mirrors": ["https://mirror.gcr.io"]
-}
-```
-
-Then restart Docker Desktop.
 
 - LaTeX compile errors (fonts/unicode): Prefer the `blang/latex:ctanfull` image or install a full TeX Live/MiKTeX locally. Use `--diagram-format png` for pdflatex.
 
@@ -134,3 +124,4 @@ node dist/cli.js --url "sqlite:///C:/ABS/PATH/examples/sqlite/shop/shop.sqlite" 
   --output "examples/sqlite/shop/shop.tex" --format latex --summary --er \
   --diagram-format png --compile --cleanup aux --docker --docker-image blang/latex:ctanfull
 ```
+
