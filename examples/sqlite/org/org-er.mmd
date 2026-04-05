@@ -1,0 +1,28 @@
+erDiagram
+    employee_projects {
+        integer employee_id PK
+        integer project_id PK
+        string role
+    }
+    employees {
+        integer id PK
+        integer manager_id
+        integer team_id
+        string email
+        string hired_at
+    }
+    projects {
+        integer id PK
+        integer team_id
+        string code
+        string title
+    }
+    teams {
+        integer id PK
+        string name
+    }
+    projects ||--o{ employee_projects : "fk_employee_projects_project_id_to_projects_id"
+    employees ||--o{ employee_projects : "fk_employee_projects_employee_id_to_employees_id"
+    teams ||--o{ employees : "fk_employees_team_id_to_teams_id"
+    employees ||--o{ employees : "fk_employees_manager_id_to_employees_id"
+    teams ||--o{ projects : "fk_projects_team_id_to_teams_id"
