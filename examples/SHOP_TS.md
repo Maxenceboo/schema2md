@@ -1,7 +1,8 @@
 # Shop DB (TS)
 
 ## Table Index
-- [line_items](#table-line_items)
+<a id="table-index"></a>
+- [line_items](#table-line-items)
 - [orders](#table-orders)
 - [users](#table-users)
 
@@ -28,36 +29,52 @@ erDiagram
     users ||--o{ orders : "fk_orders_user_id_to_users_id"
 ```
 
-## Table: line_items
-<a id="table-line_items"></a>
+## Tables
 
-| Column | Type | PK/FK | Nullable | Default | Description |
+### line_items
+<a id="table-line-items"></a>
+
+Columns: 4 / PK: 1 / FKs: 1
+
+| Column | Type | Attr | Null | Default | Description |
 |---|---|---|---|---|---|
-| id | Integer | PK | Yes | - | - |
-| order_id | Integer | FK | No | - | - |
-| sku | String | - | No | - | - |
-| qty | Integer | - | No | - | - |
+| id | `Integer` | PK | Yes | - | - |
+| order_id | `Integer` | FK | No | - | - |
+| qty | `Integer` | - | No | - | - |
+| sku | `String` | - | No | - | - |
 
-**Foreign Keys**
-- line_items.order_id -> orders.id (`fk_line_items_order_id_to_orders_id`)
+Foreign Keys
 
-## Table: orders
+- `line_items.order_id` -> `orders.id` (`fk_line_items_order_id_to_orders_id`)
+
+[Back to index](#table-index)
+
+### orders
 <a id="table-orders"></a>
 
-| Column | Type | PK/FK | Nullable | Default | Description |
+Columns: 3 / PK: 1 / FKs: 1
+
+| Column | Type | Attr | Null | Default | Description |
 |---|---|---|---|---|---|
-| id | Integer | PK | Yes | - | - |
-| user_id | String | FK | No | - | - |
-| placed_at | String | - | No | - | - |
+| id | `Integer` | PK | Yes | - | - |
+| placed_at | `String` | - | No | - | - |
+| user_id | `String` | FK | No | - | - |
 
-**Foreign Keys**
-- orders.user_id -> users.id (`fk_orders_user_id_to_users_id`)
+Foreign Keys
 
-## Table: users
+- `orders.user_id` -> `users.id` (`fk_orders_user_id_to_users_id`)
+
+[Back to index](#table-index)
+
+### users
 <a id="table-users"></a>
 
-| Column | Type | PK/FK | Nullable | Default | Description |
+Columns: 3 / PK: 1 / FKs: 0
+
+| Column | Type | Attr | Null | Default | Description |
 |---|---|---|---|---|---|
-| id | String | PK | Yes | - | - |
-| email | String | - | No | - | - |
-| created_at | String | - | No | - | - |
+| id | `String` | PK | Yes | - | - |
+| created_at | `String` | - | No | - | - |
+| email | `String` | - | No | - | - |
+
+[Back to index](#table-index)
