@@ -1,4 +1,4 @@
-import { Schema } from '../core/models';
+ï»¿import { Schema } from '../core/models';
 
 function esc(s: string): string {
   return s
@@ -38,7 +38,7 @@ function relationships(schema: Schema): string[] {
   const lines: string[] = [];
   lines.push('\\section*{Relations (FK)}');
   if (!schema.tables.some(t=>t.fks.length)) {
-    lines.push('Aucune clé étrangère détectée.');
+    lines.push('Aucune clÃ© Ã©trangÃ¨re dÃ©tectÃ©e.');
     return lines;
   }
   lines.push('\\begin{itemize}');
@@ -53,13 +53,13 @@ function relationships(schema: Schema): string[] {
 
 function tableSummary(schema: Schema): string[] {
   const lines: string[] = [];
-  lines.push('\\section*{Résumé}');
+  lines.push('\\section*{Summary}');
   const tableCount = schema.tables.length;
   const colCount = schema.tables.reduce((n,t)=>n + t.columns.length, 0);
   const fkCount = schema.tables.reduce((n,t)=>n + t.fks.length, 0);
   lines.push(`Total tables: ${tableCount}\\\\`);
-  lines.push(`Total colonnes: ${colCount}\\\\`);
-  lines.push(`Total clés étrangères: ${fkCount}`);
+  lines.push(`Total columns: ${colCount}\\\\`);
+  lines.push(`Total foreign keys: ${fkCount}`);
   return lines;
 }
 
@@ -101,3 +101,5 @@ export function renderLatex(schema: Schema, title = 'Database Documentation', su
   out.push('\\end{document}');
   return out.join('\n');
 }
+
+

@@ -34,15 +34,15 @@ export function compileLatex(texPath: string, opts: CompileOptions = {}): { ok: 
   if (!hasDocker()) {
     return { ok: false, log: 'No LaTeX engine (pdflatex/xelatex) and Docker not found.' };
   }
-  const image = opts.dockerImage || 'paperist/alpine-texlive';
+  const image = opts.dockerImage || 'tectonicapp/tectonic:latest';
   const fileBase = texAbs.replace(/^.*[\\\/]/, '');
-  const args = [
-    'run','--rm',
-    '-v', `${dir}:/work`,
-    '-w', '/work',
-    image,
-    'latexmk','-pdf','-interaction=nonstopmode','-halt-on-error', fileBase
-  ];
+
+  let args: string[];
+  if ((image || '').includes('tectonic')) {
+    args = ['run','--rm','-v', `${dir}:/work`, '-w','/work', image, 'tectonic','-X','compile', fileBase];
+  } else {
+    args = ['run','--rm','-v', `${dir}:/work`, '-w','/work', image, 'latexmk','-pdf','-interaction=nonstopmode','-halt-on-error', fileBase];
+  }
   const r = spawnSync('docker', args, { encoding: 'utf-8' });
   const ok = r.status === 0 && existsSync(pdfPath);
   return { ok, pdfPath, log: r.stdout + (r.stderr || '') };
