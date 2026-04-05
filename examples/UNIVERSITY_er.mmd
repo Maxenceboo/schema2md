@@ -1,0 +1,40 @@
+erDiagram
+    course_instructors {
+        integer course_id PK
+        integer instructor_id PK
+    }
+    courses {
+        integer id PK
+        integer department_id
+        string code
+        string title
+    }
+    departments {
+        integer id PK
+        string name
+    }
+    enrollments {
+        integer student_id PK
+        integer course_id PK
+        string enrolled_on
+        string grade
+    }
+    instructors {
+        integer id PK
+        integer department_id
+        string email
+        string hired_at
+    }
+    students {
+        integer id PK
+        integer department_id
+        string email
+        string enrolled_at
+    }
+    instructors ||--o{ course_instructors : "fk_course_instructors_instructor_id_to_instructors_id"
+    courses ||--o{ course_instructors : "fk_course_instructors_course_id_to_courses_id"
+    departments ||--o{ courses : "fk_courses_department_id_to_departments_id"
+    courses ||--o{ enrollments : "fk_enrollments_course_id_to_courses_id"
+    students ||--o{ enrollments : "fk_enrollments_student_id_to_students_id"
+    departments ||--o{ instructors : "fk_instructors_department_id_to_departments_id"
+    departments ||--o{ students : "fk_students_department_id_to_departments_id"

@@ -1,0 +1,19 @@
+erDiagram
+    line_items {
+        integer id PK
+        integer order_id
+        string sku
+        integer qty
+    }
+    orders {
+        integer id PK
+        string user_id
+        string placed_at
+    }
+    users {
+        string id PK
+        string email
+        string created_at
+    }
+    orders ||--o{ line_items : "fk_line_items_order_id_to_orders_id"
+    users ||--o{ orders : "fk_orders_user_id_to_users_id"

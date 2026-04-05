@@ -1,4 +1,4 @@
-﻿import { Schema } from '../core/models';
+﻿import { Schema, Table, Column } from '../core/models';
 
 function esc(s: string): string {
   return s
@@ -13,7 +13,7 @@ function header(title: string): string[] {
     '\\documentclass[11pt]{article}',
     '\\usepackage[margin=2.5cm]{geometry}',
     '\\usepackage[T1]{fontenc}',
-    '\\usepackage[utf8]{inputenc}',
+    '\\usepackage{graphicx}',
     '\\usepackage{hyperref}',
     '\\usepackage{longtable}',
     '\\usepackage{booktabs}',
@@ -27,7 +27,7 @@ function tableIndex(schema: Schema): string[] {
   const lines: string[] = [];
   lines.push('\\section*{Table Index}');
   lines.push('\\begin{itemize}');
-  for (const t of schema.tables.sort((a,b)=>a.name.localeCompare(b.name))) {
+  for (const t of [...schema.tables].sort((a,b)=>a.name.localeCompare(b.name))) {
     lines.push('  \\item ' + esc(t.name));
   }
   lines.push('\\end{itemize}');
@@ -38,7 +38,7 @@ function relationships(schema: Schema): string[] {
   const lines: string[] = [];
   lines.push('\\section*{Relations (FK)}');
   if (!schema.tables.some(t=>t.fks.length)) {
-    lines.push('Aucune clé étrangère détectée.');
+    lines.push('No foreign keys detected.');
     return lines;
   }
   lines.push('\\begin{itemize}');
@@ -65,7 +65,7 @@ function tableSummary(schema: Schema): string[] {
 
 function tableDetails(schema: Schema): string[] {
   const lines: string[] = [];
-  for (const t of schema.tables.sort((a,b)=>a.name.localeCompare(b.name))) {
+  for (const t of [...schema.tables].sort((a,b)=>a.name.localeCompare(b.name))) {
     lines.push('\\section*{Table: ' + esc(t.name) + '}');
     if (t.comment) lines.push(esc(t.comment));
     lines.push('\\begin{longtable}{@{}llllll@{}}');
@@ -74,11 +74,11 @@ function tableDetails(schema: Schema): string[] {
     lines.push('\\midrule');
     const cols = [...t.columns].sort((a,b)=> (Number(b.is_pk)-Number(a.is_pk)) || a.name.localeCompare(b.name));
     for (const c of cols) {
-      const attrs = [c.is_pk? 'PK' : '', c.is_fk? 'FK' : ''].filter(Boolean).join('/');
+      const attrs = [c.is_pk? 'PK' : '', c.is_fk? 'FK' : ''].filter(Boolean).join('/') || '-';
       const nullable = c.nullable ? 'Yes' : 'No';
       const defv = c.default != null && String(c.default).trim() !== '' ? esc(String(c.default)) : '-';
       const desc = c.comment?.trim() ? esc(c.comment) : '-';
-      lines.push(`${esc(c.name)} & ${esc(c.type)} & ${esc(attrs || '-')} & ${nullable} & ${defv} & ${desc} \\\\`);
+      lines.push(`${esc(c.name)} & ${esc(c.type)} & ${esc(attrs)} & ${nullable} & ${defv} & ${desc} \\\\`);
     }
     lines.push('\\bottomrule');
     lines.push('\\end{longtable}');
@@ -86,13 +86,19 @@ function tableDetails(schema: Schema): string[] {
   return lines;
 }
 
-export function renderLatex(schema: Schema, title = 'Database Documentation', summaryOnly = false): string {
+export function renderLatex(schema: Schema, title = 'Database Documentation', summaryOnly = false, figurePath?: string): string {
   const out: string[] = [];
   out.push(...header(title));
   out.push(...tableSummary(schema));
   out.push('');
   out.push(...tableIndex(schema));
   out.push('');
+  if (figurePath) {
+    out.push('\\section*{ER Diagram}');
+    out.push('\\begin{center}');
+    out.push('\\includegraphics[width=\\textwidth]{' + (figurePath.replace(/\\\\/g,'/')) + '}');
+    out.push('\\end{center}');
+  }
   out.push(...relationships(schema));
   if (!summaryOnly) {
     out.push('');
@@ -101,5 +107,4 @@ export function renderLatex(schema: Schema, title = 'Database Documentation', su
   out.push('\\end{document}');
   return out.join('\n');
 }
-
 
