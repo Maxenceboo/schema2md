@@ -17,6 +17,17 @@ Génère une documentation Markdown avec diagramme ER (Mermaid) à partir d'un s
 
 ## Utilisation
 
+### LaTeX (résumé ou complet)
+
+- Résumé (counts + index + relations):
+  - db-doc --url "sqlite:///C:/.../shop.sqlite" --output "out.tex" --format latex --summary
+- Complet (ajoute le détail des colonnes):
+  - db-doc --url "postgres://.../dbname?schema=public" --output "out.tex" --format latex
+
+> Compilez le .tex avec votre distribution LaTeX habituelle (pdflatex, xelatex, etc.).
+
+### Markdown
+
 Génère un fichier Markdown depuis l'URL de connexion.
 
 ### SQLite
@@ -103,3 +114,4 @@ Arborescence:
   - Créez une Release/tag (ex: `v0.3.0`).
 
 Licence: MIT
+
