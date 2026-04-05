@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# LaTeX aux files
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+
