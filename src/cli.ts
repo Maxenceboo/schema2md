@@ -9,6 +9,7 @@ import { PostgresExtractor } from './extractors/postgresExtractor';
 import { MySQLExtractor } from './extractors/mysqlExtractor';
 import { renderMarkdown } from './emitters/markdown';
 import { renderLatex } from './emitters/latex';
+import { compileLatex, cleanupLatex } from './utils/latexCompile';
 
 function parseUrlToPath(urlStr: string): string {
   try {
@@ -30,7 +31,9 @@ async function main() {
       exclude: { type: 'string', default: '' },
       title: { type: 'string', default: 'Database Documentation' },
       format: { type: 'string', default: 'md' },
-      summary: { type: 'boolean', default: false }
+      summary: { type: 'boolean', default: false },
+      compile: { type: 'boolean', default: false },
+      cleanup: { type: 'string', default: 'aux' }
     },
     allowPositionals: false
   } as any);
@@ -79,10 +82,17 @@ async function main() {
   const dir = dirname(outPath);
   if (dir && !existsSync(dir)) mkdirSync(dir, { recursive: true });
   writeFileSync(outPath, content, 'utf-8');
+  if (format === 'latex' && values.compile) {
+    const res = compileLatex(outPath);
+    if (!res.ok) { console.error(res.log || 'LaTeX compile failed'); process.exit(1); }
+    const mode = String(values.cleanup || 'aux') as any;
+    cleanupLatex(outPath, mode);
+  }
   console.log(`Wrote: ${outPath}`);
 }
 
 main().catch(err => { console.error((err as Error).message); process.exit(1); });
+
 
 
 
