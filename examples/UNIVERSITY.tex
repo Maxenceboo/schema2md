@@ -1,0 +1,36 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{booktabs}
+\title{University DB}
+\begin{document}
+\maketitle
+\section*{R�sum�}
+Total tables: 6\\
+Total colonnes: 20\\
+Total cl�s �trang�res: 7
+
+\section*{Table Index}
+\begin{itemize}
+  \item course\_instructors
+  \item courses
+  \item departments
+  \item enrollments
+  \item instructors
+  \item students
+\end{itemize}
+
+\section*{Relations (FK)}
+\begin{itemize}
+  \item course\_instructors.instructor\_id -> instructors.id
+  \item course\_instructors.course\_id -> courses.id
+  \item courses.department\_id -> departments.id
+  \item enrollments.course\_id -> courses.id
+  \item enrollments.student\_id -> students.id
+  \item instructors.department\_id -> departments.id
+  \item students.department\_id -> departments.id
+\end{itemize}
+\end{document}
