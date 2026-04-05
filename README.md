@@ -110,11 +110,6 @@ CLI `--exclude` merges with config values (deduped).
 - PostgreSQL: information_schema + pg_description for comments; select schema via `?schema=`.
 - MySQL/MariaDB: information_schema; comments supported when present.
 
-## Troubleshooting
-
-
-- LaTeX compile errors (fonts/unicode): Prefer the `blang/latex:ctanfull` image or install a full TeX Live/MiKTeX locally. Use `--diagram-format png` for pdflatex.
-
 ## Development
 
 ```bash
@@ -124,4 +119,5 @@ node dist/cli.js --url "sqlite:///C:/ABS/PATH/examples/sqlite/shop/shop.sqlite" 
   --output "examples/sqlite/shop/shop.tex" --format latex --summary --er \
   --diagram-format png --compile --cleanup aux --docker --docker-image blang/latex:ctanfull
 ```
+
 
