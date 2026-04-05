@@ -1,65 +1,100 @@
 ﻿# schema2md-cli
 
-Génère une documentation Markdown avec diagramme ER (Mermaid) à partir d'un schéma de base de données.
+Generate database documentation (Markdown or LaTeX) with an optional ER diagram from your schema.
 
-- TypeScript/Node.js uniquement
-- Moteurs supportés (MVP+): SQLite, PostgreSQL, MySQL/MariaDB
-- Sorties: Markdown + bloc Mermaid `erDiagram`
+- TypeScript/Node.js CLI
+- Supported sources: SQLite, PostgreSQL, MySQL/MariaDB
+- Outputs: Markdown (.md) or LaTeX (.tex), with optional PDF compile
+- ER diagram: Mermaid.js → rendered to image and embedded (Markdown/LaTeX)
 
 ## Installation
 
-- Requis: Node.js >= 18
-- Utilisation directe (sans installer):
-  - `npx schema2md-cli@latest --help`
-- Installation globale:
+- Requirements: Node.js 18+
+- Global install:
   - `npm install -g schema2md-cli`
-  - Puis `db-doc --help`
+  - Run: `db-doc --help`
+- Without install: `npx schema2md-cli@latest --help`
 
-## Utilisation
+## CLI
 
-### LaTeX (résumé ou complet)
+Required:
+- `--url` Database URL (sqlite://, postgres://, mysql://)
+- `--output` Output path (.md or .tex)
 
-- Résumé (counts + index + relations):
-  - db-doc --url "sqlite:///C:/.../shop.sqlite" --output "out.tex" --format latex --summary
-- Complet (ajoute le détail des colonnes):
-  - db-doc --url "postgres://.../dbname?schema=public" --output "out.tex" --format latex
+Common:
+- `--exclude` Comma-separated glob patterns to ignore tables, e.g. `migrations,temp_*`
+- `--title` Document title (default: `Database Documentation`)
 
-> Compilez le .tex avec votre distribution LaTeX habituelle (pdflatex, xelatex, etc.).
+Formats:
+- `--format md` (default)
+- `--format latex`
 
-### Markdown
+LaTeX options:
+- `--summary` Generate a condensed LaTeX (counts + index + relations). Omit to include full per-table details.
+- `--compile` Compile `.tex` into `.pdf` (requires local LaTeX or Docker)
+- `--cleanup aux|all` Clean LaTeX aux files; `all` also deletes the `.tex`
+- `--docker` Use Docker to compile (when no local LaTeX): recommend `--docker-image blang/latex:ctanfull`
+- `--docker-image <image>` LaTeX Docker image (default: `paperist/alpine-texlive` if not set; `blang/latex:ctanfull` is safer)
 
-Génère un fichier Markdown depuis l'URL de connexion.
+ER diagram options (Mermaid):
+- `--er` / `--no-er` Include/exclude ER diagram in LaTeX (default: include)
+- `--diagram-format svg|png|pdf` Render format for ER (default: `png` for LaTeX/pdflatex compatibility)
+- `--er-docker-image <image>` Mermaid CLI Docker image (e.g., `minlag/mermaid-cli:latest`)
 
-### SQLite
+Notes on Mermaid rendering:
+- The CLI first tries Docker (Mermaid CLI). If not available or fails, it falls back to Kroki (https://kroki.io) to render the image. You can disable the fallback by providing an invalid URL via `KROKI_URL` env or removing network access.
+
+## Examples
+
+Project ships with ready SQLite examples:
+- `examples/sqlite/shop/`
+- `examples/sqlite/university/`
+- `examples/sqlite/org/`
+
+Each folder contains:
+- `*.sqlite` sample DB
+- `*.tex` LaTeX source
+- `*.pdf` compiled output
+- `*-er.mmd` Mermaid source of the ER diagram
+- `*-er.png` rendered ER diagram image
+
+Example command (Shop, LaTeX + PDF + ER diagram via Docker):
 
 ```bash
-# Chemin absolu recommandé
-db-doc --url "sqlite:///C:/chemin/vers/base.sqlite" --output README.md --title "Ma Base"
+# Windows paths: ensure sqlite URL uses an absolute path
+# Use PNG diagram for pdflatex compatibility
+
+db-doc \
+  --url "sqlite:///C:/ABS/PATH/examples/sqlite/shop/shop.sqlite" \
+  --output "examples/sqlite/shop/shop.tex" \
+  --format latex \
+  --summary \
+  --er --diagram-format png \
+  --compile --cleanup aux \
+  --docker --docker-image "blang/latex:ctanfull"
 ```
 
-### PostgreSQL
+PostgreSQL example:
 
 ```bash
-# Paramètre optionnel ?schema=public (défaut)
-db-doc --url "postgres://user:pass@host:5432/ma_db?schema=public" --output db.md --exclude "migrations,temp_*"
+db-doc \
+  --url "postgres://user:pass@host:5432/db?schema=public" \
+  --output out.tex \
+  --format latex \
+  --er --diagram-format png \
+  --compile --cleanup aux \
+  --docker --docker-image "blang/latex:ctanfull"
 ```
 
-### MySQL / MariaDB
+Markdown example (no PDF):
 
 ```bash
-db-doc --url "mysql://user:pass@host:3306/ma_db" --output db.md
+db-doc --url "sqlite:///C:/ABS/PATH/db.sqlite" --output README.md --format md --exclude "migrations,temp_*"
 ```
-
-### Options
-
-- `--url` (requis): URL de la base. Schémas supportés: `sqlite://`, `postgres://`, `mysql://`.
-- `--output` (requis): Chemin du fichier Markdown à écrire.
-- `--exclude`: Liste de motifs (séparés par des virgules) pour ignorer des tables, ex: `migrations,temp_*`.
-- `--title`: Titre du document (défaut: `Database Documentation`).
 
 ## Configuration (.dbdoc.json)
 
-Placez un fichier `.dbdoc.json` à la racine du projet pour persister des exclusions:
+Place at repo root to persist exclusions and future options:
 
 ```json
 {
@@ -67,51 +102,35 @@ Placez un fichier `.dbdoc.json` à la racine du projet pour persister des exclus
 }
 ```
 
-Les motifs du fichier et ceux passés en ligne de commande sont fusionnés (sans doublons). Les wildcards `*` et `?` sont supportées.
+CLI `--exclude` merges with config values (deduped).
 
-## Sortie générée
+## Engine specifics
 
-- Index des tables avec ancres internes
-- Diagramme global Mermaid (`erDiagram`)
-- Section par table:
-  - Tableau des colonnes (type générique lisible, PK/FK, nullabilité, défaut, description)
-  - Liste des clés étrangères
+- SQLite: PRAGMA introspection; no native comments → Description shows `-`.
+- PostgreSQL: information_schema + pg_description for comments; select schema via `?schema=`.
+- MySQL/MariaDB: information_schema; comments supported when present.
 
-Exemple de relations Mermaid: `Users ||--o{ Orders : "fk_orders_user_id_to_users_id"`.
+## Troubleshooting
 
-## Notes par moteur
+- Docker DNS: If image pulls fail (registry-1.docker.io host), set Docker Engine `daemon.json` with:
 
-- SQLite: Extraction via PRAGMA; pas de commentaires natifs de colonnes/tables (champs de description resteront `-`).
-- PostgreSQL: Utilise `information_schema` + `pg_description` pour commentaires; schéma sélectionné via `?schema=`.
-- MySQL/MariaDB: Utilise `information_schema`; commentaires de tables/colonnes si présents.
+```json
+{
+  "dns": ["8.8.8.8", "1.1.1.1"],
+  "registry-mirrors": ["https://mirror.gcr.io"]
+}
+```
 
-## Limitations actuelles
+Then restart Docker Desktop.
 
-- Un seul schéma à la fois pour PostgreSQL (via `?schema=`).
-- Composite PK/FK et contraintes uniques non encore détaillés dans le diagramme Mermaid.
+- LaTeX compile errors (fonts/unicode): Prefer the `blang/latex:ctanfull` image or install a full TeX Live/MiKTeX locally. Use `--diagram-format png` for pdflatex.
 
-## Développement
+## Development
 
 ```bash
 npm install
 npm run build
-node dist/cli.js --url "sqlite:///C:/.../examples/shop.sqlite" --output "examples/SHOP_TS.md"
+node dist/cli.js --url "sqlite:///C:/ABS/PATH/examples/sqlite/shop/shop.sqlite" \
+  --output "examples/sqlite/shop/shop.tex" --format latex --summary --er \
+  --diagram-format png --compile --cleanup aux --docker --docker-image blang/latex:ctanfull
 ```
-
-Arborescence:
-- `src/cli.ts` — Entrée CLI
-- `src/extractors/` — `sqliteExtractor.ts`, `postgresExtractor.ts`, `mysqlExtractor.ts`
-- `src/emitters/` — `markdown.ts`, `mermaid.ts`
-- `src/core/` — `models.ts`, `typeMapping.ts`
-- `src/utils/` — `config.ts`, `filters.ts`
-
-## Publication npm
-
-- Le package est prêt pour `npm publish` (champ `bin` → `db-doc`).
-- Un workflow GitHub Actions publie sur npm lors d'une Release:
-  - Fichier: `.github/workflows/publish.yml`
-  - Ajoutez le secret `NPM_TOKEN` dans le dépôt (Settings → Secrets → Actions).
-  - Créez une Release/tag (ex: `v0.3.0`).
-
-Licence: MIT
-
