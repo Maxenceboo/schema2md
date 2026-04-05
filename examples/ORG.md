@@ -1,7 +1,8 @@
 # Org DB
 
 ## Table Index
-- [employee_projects](#table-employee_projects)
+<a id="table-index"></a>
+- [employee_projects](#table-employee-projects)
 - [employees](#table-employees)
 - [projects](#table-projects)
 - [teams](#table-teams)
@@ -38,51 +39,72 @@ erDiagram
     teams ||--o{ projects : "fk_projects_team_id_to_teams_id"
 ```
 
-## Table: employee_projects
-<a id="table-employee_projects"></a>
+## Tables
 
-| Column | Type | PK/FK | Nullable | Default | Description |
+### employee_projects
+<a id="table-employee-projects"></a>
+
+Columns: 3 / PK: 2 / FKs: 2
+
+| Column | Type | Attr | Null | Default | Description |
 |---|---|---|---|---|---|
-| employee_id | Integer | PK/FK | No | - | - |
-| project_id | Integer | PK/FK | No | - | - |
-| role | String | - | Yes | - | - |
+| employee_id | `Integer` | PK/FK | No | - | - |
+| project_id | `Integer` | PK/FK | No | - | - |
+| role | `String` | - | Yes | - | - |
 
-**Foreign Keys**
-- employee_projects.project_id -> projects.id (`fk_employee_projects_project_id_to_projects_id`)
-- employee_projects.employee_id -> employees.id (`fk_employee_projects_employee_id_to_employees_id`)
+Foreign Keys
 
-## Table: employees
+- `employee_projects.project_id` -> `projects.id` (`fk_employee_projects_project_id_to_projects_id`)
+- `employee_projects.employee_id` -> `employees.id` (`fk_employee_projects_employee_id_to_employees_id`)
+
+[Back to index](#table-index)
+
+### employees
 <a id="table-employees"></a>
 
-| Column | Type | PK/FK | Nullable | Default | Description |
+Columns: 5 / PK: 1 / FKs: 2
+
+| Column | Type | Attr | Null | Default | Description |
 |---|---|---|---|---|---|
-| id | Integer | PK | Yes | - | - |
-| manager_id | Integer | FK | Yes | - | - |
-| team_id | Integer | FK | Yes | - | - |
-| email | String | - | No | - | - |
-| hired_at | String | - | No | - | - |
+| id | `Integer` | PK | Yes | - | - |
+| email | `String` | - | No | - | - |
+| hired_at | `String` | - | No | - | - |
+| manager_id | `Integer` | FK | Yes | - | - |
+| team_id | `Integer` | FK | Yes | - | - |
 
-**Foreign Keys**
-- employees.team_id -> teams.id (`fk_employees_team_id_to_teams_id`)
-- employees.manager_id -> employees.id (`fk_employees_manager_id_to_employees_id`)
+Foreign Keys
 
-## Table: projects
+- `employees.team_id` -> `teams.id` (`fk_employees_team_id_to_teams_id`)
+- `employees.manager_id` -> `employees.id` (`fk_employees_manager_id_to_employees_id`)
+
+[Back to index](#table-index)
+
+### projects
 <a id="table-projects"></a>
 
-| Column | Type | PK/FK | Nullable | Default | Description |
+Columns: 4 / PK: 1 / FKs: 1
+
+| Column | Type | Attr | Null | Default | Description |
 |---|---|---|---|---|---|
-| id | Integer | PK | Yes | - | - |
-| team_id | Integer | FK | No | - | - |
-| code | String | - | No | - | - |
-| title | String | - | No | - | - |
+| id | `Integer` | PK | Yes | - | - |
+| code | `String` | - | No | - | - |
+| team_id | `Integer` | FK | No | - | - |
+| title | `String` | - | No | - | - |
 
-**Foreign Keys**
-- projects.team_id -> teams.id (`fk_projects_team_id_to_teams_id`)
+Foreign Keys
 
-## Table: teams
+- `projects.team_id` -> `teams.id` (`fk_projects_team_id_to_teams_id`)
+
+[Back to index](#table-index)
+
+### teams
 <a id="table-teams"></a>
 
-| Column | Type | PK/FK | Nullable | Default | Description |
+Columns: 2 / PK: 1 / FKs: 0
+
+| Column | Type | Attr | Null | Default | Description |
 |---|---|---|---|---|---|
-| id | Integer | PK | Yes | - | - |
-| name | String | - | No | - | - |
+| id | `Integer` | PK | Yes | - | - |
+| name | `String` | - | No | - | - |
+
+[Back to index](#table-index)
