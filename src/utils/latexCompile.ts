@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process';
+﻿import { spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { existsSync } from 'node:fs';
 
@@ -9,14 +9,41 @@ function which(cmd: string): boolean {
   return r.status === 0;
 }
 
-export function compileLatex(texPath: string): { ok: boolean; pdfPath?: string; log?: string } {
+export interface CompileOptions {
+  docker?: boolean;
+  dockerImage?: string;
+}
+
+function hasDocker(): boolean { return which('docker'); }
+
+export function compileLatex(texPath: string, opts: CompileOptions = {}): { ok: boolean; pdfPath?: string; log?: string } {
   const texAbs = resolve(texPath);
   const dir = dirname(texAbs);
-  const engine = which('pdflatex') ? 'pdflatex' : (which('xelatex') ? 'xelatex' : null);
-  if (!engine) return { ok: false, log: 'No LaTeX engine found (pdflatex/xelatex). Install TeX Live or MiKTeX.' };
-  const args = ['-interaction=nonstopmode', '-halt-on-error', texAbs];
-  const r = spawnSync(engine, args, { cwd: dir, encoding: 'utf-8' });
   const pdfPath = texAbs.replace(/\.tex$/i, '.pdf');
+
+  const localEngine = which('pdflatex') ? 'pdflatex' : (which('xelatex') ? 'xelatex' : null);
+  const wantDocker = !!opts.docker || !localEngine;
+
+  if (!wantDocker) {
+    const args = ['-interaction=nonstopmode', '-halt-on-error', texAbs];
+    const r = spawnSync(localEngine!, args, { cwd: dir, encoding: 'utf-8' });
+    const ok = r.status === 0 && existsSync(pdfPath);
+    return { ok, pdfPath, log: r.stdout + (r.stderr || '') };
+  }
+
+  if (!hasDocker()) {
+    return { ok: false, log: 'No LaTeX engine (pdflatex/xelatex) and Docker not found.' };
+  }
+  const image = opts.dockerImage || 'paperist/alpine-texlive';
+  const fileBase = texAbs.replace(/^.*[\\\/]/, '');
+  const args = [
+    'run','--rm',
+    '-v', `${dir}:/work`,
+    '-w', '/work',
+    image,
+    'latexmk','-pdf','-interaction=nonstopmode','-halt-on-error', fileBase
+  ];
+  const r = spawnSync('docker', args, { encoding: 'utf-8' });
   const ok = r.status === 0 && existsSync(pdfPath);
   return { ok, pdfPath, log: r.stdout + (r.stderr || '') };
 }
