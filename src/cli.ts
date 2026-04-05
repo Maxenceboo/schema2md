@@ -8,6 +8,7 @@ import { SQLiteExtractor } from './extractors/sqliteExtractor';
 import { PostgresExtractor } from './extractors/postgresExtractor';
 import { MySQLExtractor } from './extractors/mysqlExtractor';
 import { renderMarkdown } from './emitters/markdown';
+import { renderLatex } from './emitters/latex';
 
 function parseUrlToPath(urlStr: string): string {
   try {
@@ -27,7 +28,9 @@ async function main() {
       url: { type: 'string' },
       output: { type: 'string' },
       exclude: { type: 'string', default: '' },
-      title: { type: 'string', default: 'Database Documentation' }
+      title: { type: 'string', default: 'Database Documentation' },
+      format: { type: 'string', default: 'md' },
+      summary: { type: 'boolean', default: false }
     },
     allowPositionals: false
   } as any);
@@ -69,15 +72,22 @@ async function main() {
     throw new Error('Unsupported URL scheme. Use sqlite://, postgres://, or mysql://');
   }
 
-  const md = renderMarkdown(schema, String(values.title));
+  const format = String(values.format || 'md').toLowerCase();
+  const isSummary = Boolean(values.summary);
+  const content = format === 'latex' ? renderLatex(schema, String(values.title), isSummary) : renderMarkdown(schema, String(values.title));
   const outPath = String(values.output);
   const dir = dirname(outPath);
   if (dir && !existsSync(dir)) mkdirSync(dir, { recursive: true });
-  writeFileSync(outPath, md, 'utf-8');
+  writeFileSync(outPath, content, 'utf-8');
   console.log(`Wrote: ${outPath}`);
 }
 
 main().catch(err => { console.error((err as Error).message); process.exit(1); });
+
+
+
+
+
 
 
 

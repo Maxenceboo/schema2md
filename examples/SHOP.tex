@@ -1,0 +1,28 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{booktabs}
+\title{Shop DB (LaTeX)}
+\begin{document}
+\maketitle
+\section*{R�sum�}
+Total tables: 3\\
+Total colonnes: 10\\
+Total cl�s �trang�res: 2
+
+\section*{Table Index}
+\begin{itemize}
+  \item line\_items
+  \item orders
+  \item users
+\end{itemize}
+
+\section*{Relations (FK)}
+\begin{itemize}
+  \item line\_items.order\_id -> orders.id
+  \item orders.user\_id -> users.id
+\end{itemize}
+\end{document}
